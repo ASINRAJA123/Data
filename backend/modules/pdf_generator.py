@@ -1,3 +1,4 @@
+import pathlib
 from jinja2 import Environment, FileSystemLoader
 from xhtml2pdf import pisa
 import pandas as pd
@@ -5,13 +6,15 @@ import plotly.io as pio
 import io
 import base64
 from datetime import datetime
-import pathlib # Keep this import
 
 
 def create_pdf_report(kpis: dict, summary: str, charts: dict, df: pd.DataFrame) -> bytes:
     """Renders an HTML template with data and converts it to a PDF using xhtml2pdf."""
-    backend_dir = pathlib.Path(__file__).parent.resolve()
-    # # 2. Navigate up one level to the 'backend' directory
+    # Get the directory of the current script (modules/)
+    script_dir = pathlib.Path(__file__).parent
+    # Navigate up one level to the 'backend' directory
+    backend_dir = script_dir.parent.resolve()
+    
     template_dir = backend_dir / "templates"
     env = Environment(loader=FileSystemLoader(str(template_dir)))
     template = env.get_template('report_template.html')
