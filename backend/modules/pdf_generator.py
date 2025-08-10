@@ -5,13 +5,25 @@ import plotly.io as pio
 import io
 import base64
 from datetime import datetime
+import pathlib # Keep this import
+
 
 def create_pdf_report(kpis: dict, summary: str, charts: dict, df: pd.DataFrame) -> bytes:
     """Renders an HTML template with data and converts it to a PDF using xhtml2pdf."""
     # --- THIS IS THE FIX ---
     # The path must go up one level from /backend to find the /templates folder.
-    env = Environment(loader=FileSystemLoader('../templates'))
-    # --- END OF FIX ---
+    
+    current_file_dir = pathlib.Path(__file__).parent.resolve()
+
+    # 2. Navigate up one level to the 'backend' directory
+    # from 'modules' -> to 'backend'
+    backend_dir = current_file_dir.parent
+
+    # 3. Construct the path to the 'templates' directory, which is inside 'backend'
+    template_dir = backend_dir / "templates"
+
+    # 4. Use this absolute path in the FileSystemLoader
+    env = Environment(loader=FileSystemLoader(template_dir))    # --- END OF FIX ---
     
     template = env.get_template('report_template.html')
 
