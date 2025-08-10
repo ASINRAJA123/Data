@@ -199,6 +199,13 @@ async def chat_with_data(request: ChatRequest):
         chat_history.append({"role": "bot", "content": error_message})
         raise HTTPException(status_code=500, detail="Error executing the request.")
 
+@app.get("/api/ping")
+async def ping():
+    """
+    A simple endpoint to check if the server is running.
+    Responds with a "pong" to a "ping".
+    """
+    return {"message": "pong"}
 
 @app.get("/api/export-pdf")
 async def export_pdf_report():
