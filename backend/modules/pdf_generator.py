@@ -10,7 +10,7 @@ import pathlib # Keep this import
 
 def create_pdf_report(kpis: dict, summary: str, charts: dict, df: pd.DataFrame) -> bytes:
     """Renders an HTML template with data and converts it to a PDF using xhtml2pdf."""
-
+    backend_dir = pathlib.Path(__file__).parent.resolve()
     # # 2. Navigate up one level to the 'backend' directory
     template_dir = backend_dir / "templates"
     env = Environment(loader=FileSystemLoader(str(template_dir)))
