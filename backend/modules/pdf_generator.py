@@ -10,25 +10,10 @@ import pathlib # Keep this import
 
 def create_pdf_report(kpis: dict, summary: str, charts: dict, df: pd.DataFrame) -> bytes:
     """Renders an HTML template with data and converts it to a PDF using xhtml2pdf."""
-    # --- THIS IS THE FIX ---
-    # The path must go up one level from /backend to find the /templates folder.
-    
-    # current_file_dir = pathlib.Path(__file__).parent.resolve()
 
     # # 2. Navigate up one level to the 'backend' directory
-    # # from 'modules' -> to 'backend'
-    # backend_dir = current_file_dir.parent
-
-    # # 3. Construct the path to the 'templates' directory, which is inside 'backend'
-    # template_dir = backend_dir / "templates"
-
-    # 4. Use this absolute path in the FileSystemLoader
-    backend_dir = pathlib.Path(__file__).parent.resolve()
-
-    # Point FileSystemLoader to backend folder
-    env = Environment(loader=FileSystemLoader(backend_dir))
-
-    # Load report_template.html from backend directory
+    template_dir = backend_dir / "templates"
+    env = Environment(loader=FileSystemLoader(str(template_dir)))
     template = env.get_template('report_template.html')
 
     # Convert Plotly JSON charts to static images (base64) for the PDF
