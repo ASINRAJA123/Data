@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered Insights Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <img src="../static/logo.svg" alt="Logo">
+                <h1>AI Insights Dashboard</h1>
+            </div>
+            <div class="header-actions">
+                <button id="export-pdf-btn" class="action-btn" disabled>Export to PDF</button>
+                <button id="open-chat-btn" class="action-btn chat-btn">
+                    <i class="fas fa-comment-dots"></i> Chat with Data
+                </button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- UPLOAD SECTION -->
+            <section id="upload-section" class="card">
+                <h2>1. Upload Your Data</h2>
+                <p>Upload a CSV or Excel file to begin the analysis.</p>
+                <div id="drop-zone">
+                    <p>Drag & Drop your file here or</p>
+                    <!-- Make sure to use an input with type="file" for accessibility and functionality -->
+                    <input type="file" id="file-input" accept=".csv, .xlsx, .xls" style="display: none;">
+                    <label for="file-input" class="file-label">Browse Files</label>
+                </div>
+                <div id="upload-status"></div>
+            </section>
+
+            <!-- DASHBOARD SECTION (hidden by default) -->
+            <section id="dashboard-section" class="hidden">
+                <div class="dashboard-grid">
+                    <!-- KPIs -->
+                    <div id="kpi-card" class="card kpi-grid">
+                        <div class="kpi">
+                            <span class="kpi-title">Total Sales</span>
+                            <span id="kpi-total-sales" class="kpi-value"></span>
+                        </div>
+                        <div class="kpi">
+                            <span class="kpi-title">Units Sold</span>
+                            <span id="kpi-total-units" class="kpi-value"></span>
+                        </div>
+                        <div class="kpi">
+                            <span class="kpi-title">Avg. Satisfaction</span>
+                            <span id="kpi-avg-satisfaction" class="kpi-value"></span>
+                        </div>
+                    </div>
+
+                    <!-- AI Summary -->
+                    <div id="summary-card" class="card">
+                        <h2>✨ AI Executive Summary</h2>
+                        <div id="ai-summary" class="summary-content"></div>
+                    </div>
+
+                    <!-- Charts: Row 1 -->
+                    <div id="chart1" class="card chart-container"></div> <!-- Sales by Product -->
+                    <div id="chart2" class="card chart-container"></div> <!-- Sales by Region -->
+
+                    <!-- Charts: Row 2 -->
+                    <div id="chart4" class="card chart-container"></div> <!-- Units by Region and Product -->
+                    <div id="chart5" class="card chart-container"></div> <!-- Avg Satisfaction by Product -->
+
+                    <!-- Charts: Row 3 -->
+                    <div id="chart3" class="card chart-container"></div> <!-- Satisfaction vs. Units -->
+                    <div id="chart6" class="card chart-container"></div> <!-- Sales vs Units Scatter -->
+
+                    <!-- Charts: Row 4 (Full Width) -->
+                    <div id="chart7" class="card chart-container full-width"></div> <!-- Sales Efficiency Heatmap -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Floating Chat Button (always visible) -->
+    <button id="floating-chat-btn" class="floating-chat-btn">
+        <i class="fas fa-comment-dots"></i>
+    </button>
+
+    <!-- Full-screen Chat Modal -->
+    <div id="chat-modal" class="chat-modal hidden">
+        <div class="chat-modal-content">
+            <div class="chat-modal-header">
+                <h2>Chat with Your Data</h2>
+                <button id="close-chat-modal" class="close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="chat-messages" class="chat-messages">
+                <div class="message bot">Hello! I'm your data assistant. Ask me anything about your uploaded data, like "What are the key trends?" or "Show me sales by region."</div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="chat-input" placeholder="Type your question about the data..." autocomplete="off">
+                <button id="chat-submit" class="send-btn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loader -->
+    <div id="loader" class="loader-overlay hidden">
+        <div class="spinner"></div>
+        <p id="loader-text">Processing...</p>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>

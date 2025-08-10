@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Report</title>
+    <style>
+        @page {
+            size: a4 portrait;
+            margin: 1.5cm;
+        }
+        body { font-family: 'Helvetica', 'Arial', sans-serif; color: #333; font-size: 10pt; }
+        .container { width: 100%; margin: auto; }
+        .header { text-align: center; border-bottom: 2px solid #eee; padding-bottom: 20px; }
+        h1 { color: #1a1a1a; font-size: 24pt; margin-bottom: 0; }
+        h2 { color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 30px; font-size: 16pt; }
+        .summary { background-color: #f9f9f9; padding: 15px; border: 1px solid #eee; border-radius: 5px; margin-top: 20px; font-size: 11pt; line-height: 1.5; }
+        
+        .kpi-table { width: 100%; border-spacing: 15px; margin-top: 20px; }
+        .kpi { text-align: center; border: 1px solid #ddd; border-radius: 8px; padding: 10px; }
+        .kpi h3 { margin: 0 0 10px 0; color: #555; font-size: 10pt; }
+        .kpi p { font-size: 18pt; font-weight: bold; margin: 0; color: #000; }
+        
+        .chart-table { width: 100%; border-spacing: 15px; margin-top: 20px; }
+        .chart-cell { text-align: center; vertical-align: top; }
+        .chart-cell img {
+            max-width: 100%;
+            border: 1px solid #ddd;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        
+        .data-table { border-collapse: collapse; width: 100%; margin-top: 30px; font-size: 8pt; }
+        .data-table th, .data-table td { border: 1px solid #ddd; padding: 6px; text-align: left; }
+        .data-table th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Business Insights Report</h1>
+            <p>Generated on: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}</p>
+        </div>
+
+        <h2>Executive Summary</h2>
+        <div class="summary">
+            <p>{{ summary | safe }}</p>
+        </div>
+
+        <h2>Key Performance Indicators</h2>
+        <table class="kpi-table">
+            <tr>
+                <td class="kpi">
+                    <h3>Total Sales</h3>
+                    <p>{{ kpis.total_sales }}</p>
+                </td>
+                <td class="kpi">
+                    <h3>Units Sold</h3>
+                    <p>{{ kpis.total_units_sold }}</p>
+                </td>
+                <td class="kpi">
+                    <h3>Avg. Satisfaction</h3>
+                    <p>{{ kpis.average_satisfaction }}</p>
+                </td>
+            </tr>
+        </table>
+        
+        <h2>Visualizations</h2>
+        <table class="chart-table">
+            <tr>
+                <td class="chart-cell">
+                    <img src="{{ charts.sales_by_product }}" alt="Sales by Product Chart">
+                </td>
+                <td class="chart-cell">
+                    <img src="{{ charts.sales_by_region }}" alt="Sales by Region Chart">
+                </td>
+                <td class="chart-cell">
+                    <img src="{{ charts.satisfaction_vs_units }}" alt="Satisfaction vs. Units Sold Chart">
+                </td>
+            </tr>
+            <tr>
+                <td class="chart-cell">
+                    <img src="{{ charts.units_by_region_product }}" alt="Units Sold by Region and Product Chart">
+                </td>
+                <td class="chart-cell">
+                    <img src="{{ charts.avg_satisfaction_by_product }}" alt="Average Customer Satisfaction by Product Chart">
+                </td>
+                <td class="chart-cell">
+                    <img src="{{ charts.sales_vs_units_scatter }}" alt="Sales vs Units Sold by Product Chart">
+                </td>
+            </tr>
+            <tr>
+                <td colspan="3" class="chart-cell">
+                    <img src="{{ charts.sales_efficiency_heatmap }}" alt="Sales Efficiency Heatmap Chart" style="width: 90%;">
+                </td>
+            </tr>
+        </table>
+
+        <h2>Raw Data Sample</h2>
+        {{ data_sample_html | safe }}
+    </div>
+</body>
+</html>
