@@ -23,8 +23,12 @@ def create_pdf_report(kpis: dict, summary: str, charts: dict, df: pd.DataFrame) 
     # template_dir = backend_dir / "templates"
 
     # 4. Use this absolute path in the FileSystemLoader
-    env = Environment(loader=FileSystemLoader("backend/templates"))    # --- END OF FIX ---
-    
+    backend_dir = pathlib.Path(__file__).parent.resolve()
+
+    # Point FileSystemLoader to backend folder
+    env = Environment(loader=FileSystemLoader(backend_dir))
+
+    # Load report_template.html from backend directory
     template = env.get_template('report_template.html')
 
     # Convert Plotly JSON charts to static images (base64) for the PDF
