@@ -204,18 +204,54 @@ async def chat_with_data(request: ChatRequest):
 async def ping():
     return {"message": "pong"}
 
+import traceback
+import sys
+
 @app.get("/api/export-pdf")
 async def export_pdf_report():
-    # This endpoint is correct and remains unchanged from your old code
     try:
+        print("\n[DEBUG] /api/export-pdf called", flush=True)
+
+        # Step 1: Load dataframe
+        print("[DEBUG] Loading dataframe...", flush=True)
         df = data_handler.get_dataframe()
+        print(f"[DEBUG] Dataframe shape: {df.shape}", flush=True)
+        print(f"[DEBUG] Dataframe columns: {list(df.columns)}", flush=True)
+
+        # Step 2: Generate KPIs
+        print("[DEBUG] Generating KPIs...", flush=True)
         kpis = insights_generator.generate_kpis(df)
+        print(f"[DEBUG] KPIs generated: {kpis}", flush=True)
+
+        # Step 3: Create charts
+        print("[DEBUG] Creating charts...", flush=True)
         charts = chart_generator.create_charts(df)
+        print(f"[DEBUG] Charts keys: {list(charts.keys())}", flush=True)
+
+        # Step 4: Generate summary
+        print("[DEBUG] Generating AI summary...", flush=True)
         summary = llm_handler.generate_ai_summary(df, kpis)
+        print(f"[DEBUG] Summary length: {len(summary)} characters", flush=True)
+
+        # Step 5: Create PDF
+        print("[DEBUG] Creating PDF report...", flush=True)
         pdf_bytes = pdf_generator.create_pdf_report(kpis, summary, charts, df)
-        return Response(content=pdf_bytes, media_type="application/pdf",
-                        headers={"Content-Disposition": "attachment;filename=dashboard_report.pdf"})
+        print(f"[DEBUG] PDF generated: {len(pdf_bytes)} bytes", flush=True)
+
+        # Step 6: Return PDF
+        print("[DEBUG] Returning PDF response...", flush=True)
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={"Content-Disposition": "attachment;filename=dashboard_report.pdf"}
+        )
+
     except ValueError as e:
+        print(f"[ERROR] ValueError: {e}", flush=True)
+        traceback.print_exc(file=sys.stdout)
         raise HTTPException(status_code=404, detail=str(e))
+
     except Exception as e:
+        print(f"[ERROR] Exception occurred: {e}", flush=True)
+        traceback.print_exc(file=sys.stdout)
         raise HTTPException(status_code=500, detail=f"Failed to generate PDF: {str(e)}")
