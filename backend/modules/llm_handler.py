@@ -38,7 +38,6 @@ def generate_ai_summary(df: pd.DataFrame, kpis: dict) -> str:
 def generate_code_from_query(df: pd.DataFrame, history: list) -> str:
     """Translates a natural language query into Pandas code using Gemini, with conversation context."""
     schema = df.columns.tolist()
-
     unique_months = sorted(df['Month'].dt.strftime('%Y-%m').unique())
     latest_month = unique_months[-1] if unique_months else "N/A"
     previous_month = unique_months[-2] if len(unique_months) > 1 else "N/A"
@@ -48,38 +47,45 @@ def generate_code_from_query(df: pd.DataFrame, history: list) -> str:
         role = "User" if message['role'] == 'user' else "Assistant"
         formatted_history += f"{role}: {message['content']}\n"
     
-    # --- MODIFIED AND IMPROVED PROMPT ---
+    # --- NEW, ADVANCED PROMPT ---
     prompt = f"""
-    You are a Python code generation assistant for Pandas. Your task is to convert a user's question into a single, executable line of Python code by choosing the correct tool.
+    You are an expert Python data analyst. Your job is to convert a user's question into a single, executable line of Python code to query a pandas DataFrame.
 
-    **TOOL INSTRUCTIONS:**
-    1.  **For standard data questions:** (e.g., "what is the total sales", "which product is best") Generate pandas code that results in a string, number, or table.
-    2.  **For plotting/charting:** If the question starts with "Plot" (case-insensitive), you MUST call the `plot_to_base64()` tool.
-    3.  **For forecasting/prediction:** If the question contains words like "forecast", "predict", or "project", you MUST call the `get_forecast()` tool.
+    **PERSONA & RULES:**
+    1.  **You are the Decision Maker:** Analyze the user's intent. Do they want a specific number, a table, a plot, or a forecast? Choose the best tool for the job.
+    2.  **Combine Filters:** Users will often ask for multiple things at once (e.g., "sales for product A in the South region last month"). Your code must combine all filters correctly.
+    3.  **Handle Ambiguity:** If a term is vague (e.g., "best product"), make a reasonable assumption (e.g., highest sales) and state it in your answer. Do not just error out.
+    4.  **Code Only:** Your output MUST be ONLY the single line of Python code and nothing else.
 
-    **CONTEXT:**
-    - The DataFrame is named `df`.
-    - Available columns: {schema}.
-    - The output MUST be a single-line Python expression.
+    **AVAILABLE TOOLS & CONTEXT:**
+    - DataFrame is named `df`.
+    - Columns are: {schema}.
+    - Use `plot_to_base64()` for any visual chart/graph/plot requests.
+    - Use `get_forecast()` for any prediction/forecast/projection requests. This tool can now take a `filters` dictionary.
+    - Relative Dates: 'last month' means '{previous_month}', 'latest month' means '{latest_month}'.
+    - Date Format: For specific dates like "in November 2024" or "on 11-2024", use the filter `df['Month'].dt.strftime('%Y-%m') == '2024-11'`.
 
-    **ERROR HANDLING:**
-    - If a question is ambiguous or cannot be answered, return: "Error: I cannot answer that question with the available data. Please try rephrasing."
+    **ADVANCED EXAMPLES (How to Think):**
 
-    **EXAMPLES:**
-    - User: "what is the total sales"
-    - Assistant Code: `df['Sales'].sum()`
+    - User: "Plot me a graph product wise for last month"
+      - Intent: Plotting. Filters: 'last month'.
+      - Assistant Code: `plot_to_base64(df[df['Month'].dt.strftime('%Y-%m') == '{previous_month}'].groupby('Product')['Sales'].sum().plot(kind='bar', title='Sales by Product for {previous_month}'))`
 
-    - User: "Plot total sales by product"
-    - Assistant Code: `plot_to_base64(df.groupby('Product')['Sales'].sum().plot(kind='bar', title='Total Sales by Product'))`
+    - User: "what product is sold more at 11th month 2024"
+      - Intent: Data retrieval. Filters: '11-2024'. Assumption: "sold more" means by 'Sales'.
+      - Assistant Code: `df[df['Month'].dt.strftime('%Y-%m') == '2024-11'].groupby('Product')['Sales'].sum().idxmax()`
 
-    - User: "Forecast sales for the next 6 months"
-    - Assistant Code: `get_forecast(df, target_column='Sales', periods=6)`
+    - User: "what is the sales of product b last month"
+      - Intent: Data retrieval. Filters: 'Product B', 'last month'.
+      - Assistant Code: `df[(df['Product'] == 'Product B') & (df['Month'].dt.strftime('%Y-%m') == '{previous_month}')]['Sales'].sum()`
 
-    - User: "Can you predict how many units we will sell?"
-    - Assistant Code: `get_forecast(df, target_column='Units Sold', periods=3)`
+    - User: "Forecast sales for the next 3 months for product a"
+      - Intent: Forecasting with a filter.
+      - Assistant Code: `get_forecast(df, target_column='Sales', periods=3, filters={{'Product': 'Product A'}})`
 
-    - User: "Project our revenue for the next quarter"
-    - Assistant Code: `get_forecast(df, target_column='Sales', periods=3)`
+    - User: "show me the best performing product"
+      - Intent: Data retrieval. Ambiguity: "best performing". Assumption: by total sales.
+      - Assistant Code: `df.groupby('Product')['Sales'].sum().idxmax()`
 
     **CONVERSATION HISTORY:**
     {formatted_history}
@@ -88,7 +94,6 @@ def generate_code_from_query(df: pd.DataFrame, history: list) -> str:
     """
     try:
         response = model.generate_content(prompt)
-        # Clean up the response to ensure it's pure code
         code = response.text.strip().replace("`", "").replace("python", "")
         return code
     except Exception as e:

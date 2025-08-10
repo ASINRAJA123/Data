@@ -43,42 +43,61 @@ def plot_to_base64(plot_obj):
     return {"type": "plot", "image": image_base64}
 # ------------------------------------------
 
-def get_forecast(df: pd.DataFrame, target_column: str = 'Sales', periods: int = 3):
+# FILE: app.py
+
+# ... (all other code and imports remain the same) ...
+
+# --- UPGRADED HELPER FUNCTION FOR FORECASTING ---
+def get_forecast(df: pd.DataFrame, target_column: str = 'Sales', periods: int = 3, filters: dict = None):
     """
     Generates a forecast using a simple ARIMA model.
+    Accepts optional filters to apply to the dataframe before forecasting.
     Returns the forecast as a formatted string.
     """
     try:
-        # Ensure the 'Month' column is a datetime type for time series analysis
-        if not pd.api.types.is_datetime64_any_dtype(df['Month']):
+        # --- NEW: Apply filters if they are provided ---
+        filtered_df = df.copy()
+        if filters:
+            for column, value in filters.items():
+                if column not in filtered_df.columns:
+                    return f"Error: Cannot filter by '{column}' as it does not exist."
+                filtered_df = filtered_df[filtered_df[column] == value]
+        
+        if filtered_df.empty:
+            return f"Error: No data found for the specified filters {filters}."
+        # --- END NEW ---
+
+        if not pd.api.types.is_datetime64_any_dtype(filtered_df['Month']):
             return "Error: Forecasting requires a datetime 'Month' column."
             
-        # Prepare the data: create a monthly time series of the target column
-        time_series = df.groupby('Month')[target_column].sum().asfreq('MS')
+        time_series = filtered_df.groupby('Month')[target_column].sum().asfreq('MS')
 
         if len(time_series) < 12:
-            return "Error: Not enough historical data (at least 12 months required) to generate a reliable forecast."
+            return f"Error: Not enough historical data (at least 12 months required) to generate a reliable forecast for the given filters."
         
-        # Fit a simple ARIMA model (AutoRegressive Integrated Moving Average)
-        # order(p,d,q): p=lags, d=differencing, q=moving average window. (1,1,1) is a common baseline.
+        # --- THIS IS THE LINE TO CHANGE ---
+        # OLD: model = ARIMA(time_series, order=(1, 1, 1), suppress_warnings=True)
+        # NEW: Remove the unsupported argument
         model = ARIMA(time_series, order=(1, 1, 1))
+        # ------------------------------------
+
         model_fit = model.fit()
         
-        # Generate the forecast for the next 'periods' months
         forecast_result = model_fit.forecast(steps=periods)
         
-        # Format the output nicely
         forecast_df = forecast_result.reset_index()
         forecast_df.columns = ['Forecasted Month', f'Predicted {target_column}']
         forecast_df['Forecasted Month'] = forecast_df['Forecasted Month'].dt.strftime('%Y-%m')
         forecast_df[f'Predicted {target_column}'] = forecast_df[f'Predicted {target_column}'].round(2)
         
-        return f"Here is the forecast for the next {periods} months:\n\n{forecast_df.to_string(index=False)}"
+        filter_str = f" for {filters}" if filters else ""
+        return f"Here is the forecast for the next {periods} months{filter_str}:\n\n{forecast_df.to_string(index=False)}"
 
     except Exception as e:
-        return f"Error: Failed to generate forecast. The model may not be suitable for this data. Details: {e}"
+        return f"Error: Failed to generate forecast. Details: {e}"
 # ----------------------------------------------
 
+# ... (the rest of your app.py file remains unchanged) ...
 
 
 @app.on_event("startup")
