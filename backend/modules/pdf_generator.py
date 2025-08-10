@@ -23,7 +23,7 @@ def create_pdf_report(kpis: dict, summary: str, charts: dict, df: pd.DataFrame) 
     # template_dir = backend_dir / "templates"
 
     # 4. Use this absolute path in the FileSystemLoader
-    env = Environment(loader=FileSystemLoader("templates"))    # --- END OF FIX ---
+    env = Environment(loader=FileSystemLoader("backend/templates"))    # --- END OF FIX ---
     
     template = env.get_template('report_template.html')
 
