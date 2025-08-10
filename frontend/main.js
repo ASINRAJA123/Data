@@ -1,7 +1,7 @@
 // FILE: main.js
 
 document.addEventListener('DOMContentLoaded', () => {
-    const API_BASE_URL = 'http://127.0.0.1:8000/api';
+    const API_BASE_URL = 'https://data-wm3y.onrender.com/api';
 
     // UI Elements
     const dropZone = document.getElementById('drop-zone');
